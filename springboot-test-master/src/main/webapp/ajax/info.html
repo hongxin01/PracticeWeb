@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ajax teach</title>
+    <script src="/js/jquery/jquery-1.12.0.js"></script>
+</head>
+<body>
+<div style="border: cornflowerblue solid 2px;
+width: 500px; height: 800px; display: none;position: absolute;
+ margin: 900px 200px 300px  300px; background-color: darkgray" id="div_add">
+    <table>
+        <tr>
+            <td>用户名</td>
+            <td><input type="text" id="username"></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="button" value="submit" onclick="save()">
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div>
+
+    <ul>
+        <li><a href="/ajax/info.html">ajax</a></li>
+        <li><a href="/ajax/photo.html">photo</a></li>
+        <li><a href="/ajax/js-base.html">js-base</a></li>
+        <li><a href="/ajax/jq-base.html">jq-base</a></li>
+    </ul>
+</div>
+
+
+
+<h1>This is tell how ajax work!</h1>
+<img src="/images/ajax.png">
+<div>
+    <h2>ajax是一种请求数据的方法</h2>
+    你以前写的东西叫做静态网页。就是网页里的数据是什么样子的，页面最终就显示什么样子的。
+    但实际上，我们的数据都是存放到数据库的，然后请求数据库的数据，填充到网页.
+    。
+</div>
+<div>
+    这里是一个简单的例子，1使用jquery的ajax方法：<br/>
+    我想要获取所有用户信息并输入到table中。获取所有数据的方法是浏览器访问：
+    http://localhost:8080/userList。你现在浏览器输入http://localhost:8080/userList，
+    然后看看得到的响应结果。应该是这样的：
+    <pre>
+[
+    {
+        "username": "Ryan",
+        "password": "123456",
+        "age": 18,
+        "birth": "1991-02-23",
+        "sex": "man",
+        "id": 0
+    },
+    {
+        "username": "Leslie",
+        "password": "password",
+        "age": 18,
+        "birth": "1993-02-23",
+        "sex": "woman",
+        "id": 1
+    },
+    {
+        "username": "XiaoMing",
+        "password": "bugaosuni",
+        "age": 8,
+        "birth": "1891-12-03",
+        "sex": "man",
+        "id": 2
+    },
+    {
+        "username": "Tom",
+        "password": "chiru",
+        "age": 28,
+        "birth": "1981-02-23",
+        "sex": "man",
+        "id": 3
+    }
+]
+    </pre>
+
+    <div>
+        <input type="button" onclick="say()" value="I'm pxy, hit me">
+        <input type="button" onclick="getM()" value="jq learn">
+    </div>
+
+
+    <input type="button" onclick="addUser()" value="添加用户">
+    <table border="1px solid" id="user_list">
+        <tr>
+            <th>用户名</th>
+            <th>密码</th>
+            <th>年龄</th>
+            <th>性别</th>
+            <th>操作</th>
+        </tr>
+
+    </table>
+    <a href="javascript:getUsers()">获取所有用户</a>
+    <br/>
+    <script>
+        function save() {
+            uname = $("#username").val();
+            if(uname==""){
+                $("#username").after("<font color='red'>必填</font>")
+                alert("不可以不填姓名")
+            }else{
+                $.ajax({
+                    url: "http://localhost:8080/user/addUser",
+                    type: "post",
+                    dataType: "json",
+                    data:{username:uname},
+                    success: function (data) {
+                        //data数据
+                        console.log(data.status)
+                        if(data.status==200){
+                            alert("success!!!")
+                            $("#div_add").css("display","none")
+                        }else{
+                            alert("failed:"+data.msg);
+                        }
+
+
+                    },
+                    error:function (data) {
+                        console.log(data)
+                    }
+
+                });
+            }
+            console.log(uname)
+        }
+        function addUser() {
+            $("#div_add").css("display","block")
+        }
+        function getM() {
+
+            tb = $("#user_list").val();
+            alert(tb)
+        }
+        function say() {
+            console.log("wo shi pengxinyue ");
+            alert("wo")
+            alert("shi")
+            alert("p")
+            alert("x")
+            alert("y")
+        }
+        function getUsers() {
+            $.ajax({
+                url: "/user/userList",
+                type: "get",
+                dataType: "json",
+                success: function (data) {
+                    //data数据
+                    console.log(data)
+                    for(var element in data){
+                        //将json Array的每一项取出来
+                        user = data[element];
+                        console.log(user);
+                        console.log(user.username+'-'+user.age+"-"+user.sex);
+                        var template = "<tr id='dele_"+user.id+"'> " +
+                                "<td>" +user.username+ "</td>" +
+                                "<td>" +user.password+ "</td> " +
+                                "<td>" +user.age+ "</td> " +
+                                "<td>" +user.sex+ "</td>" +
+                                "<td><a href='javascript:modify("+user.id+");' >修改</a>/<a href='javascript:del("+user.id+")' >删除</a></td>" +
+                                "</tr>";
+                        $("#user_list").append(template);
+                    }
+
+                }
+            });
+        }
+
+        function modify(uid){
+            console.log(uid)
+            alert(uid)
+        }
+        function del(uid){
+            if (confirm("真的要删除吗？")){
+                $.ajax({
+                    url: "http://localhost:8080/user/deleteUser",
+                    type: "post",
+                    dataType: "json",
+                    data:{id:uid},
+                    success: function (data) {
+                        if(data.status==200){
+                            $("#dele_"+uid).remove();
+                            alert("success!!!")
+                        }else{
+                            alert("failed:"+data.msg);
+                        }
+                    },
+                    error:function (data) {
+                        console.log(data)
+                    }
+                });
+            }
+        }
+    </script>
+
+</div>
+</body>
+</html>
